@@ -66,9 +66,15 @@ We treat coordinate transforms as first-class debug artifacts:
 
 ### Current Results (Checkpointed)
 
-- 32-image overfit (synthetic subset) is solved:
-  - `pnp_ok_cnt = 32/32`
-  - `keypoint RMSE median ≈ 1.75 px`
+75/-image overfit (synthetic subset) is solved:
+  - `pnp_ok_cnt = 75/75`
+  - `keypoint RMSE median ≈ 1.75 px`<img width="889" height="490" alt="output (3)" src="https://github.com/user-attachments/assets/1e1ea7d9-0744-484c-a5f8-e2e98f3d83a8" />
+<img width="885" height="490" alt="output (4)" src="https://github.com/user-attachments/assets/9919961d-beaa-49fc-b6ff-8cee1a2c98c6" />
+<img width="880" height="490" alt="output (5)" src="https://github.com/user-attachments/assets/e98fa89f-49d4-4790-9a45-e5ab6f73b901" />
+<img width="889" height="490" alt="output (6)" src="https://github.com/user-attachments/assets/4bf86433-dae3-4836-8315-34eb563a642b" />
+<img width="889" height="490" alt="output (7)" src="https://github.com/user-attachments/assets/d819dfa2-6351-4296-97a3-7d63a00ed6a3" />
+<img width="884" height="490" alt="output (2)" src="https://github.com/user-attachments/assets/e87d7996-9611-454d-b2f9-ca8c317a0657" />
+
   - Mean RMSE can still be pulled up by a few repeated hard keypoints (outlier-driven).
 - Small synthetic validation did not pass initially (symptom pattern):
   - EPnP often returns finite but `eR` is very large and RANSAC success rate is low.
