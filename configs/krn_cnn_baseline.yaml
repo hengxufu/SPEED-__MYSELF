@@ -1,0 +1,26 @@
+model_name: krn
+krn_head: direct
+backbone: mobilenet_v2
+input_shape: [224, 224]
+input_normalize: none
+
+optimizer: adamw
+lr_schedule: step
+lr: 0.001
+weight_decay: 0.01
+lr_decay_alpha: 0.95
+lr_decay_step: 1
+grad_clip_norm: 1.0
+
+train_domain: synthetic
+test_domain: synthetic
+train_csv: train.csv
+test_csv: validation.csv
+max_epochs: 75
+batch_size: 48
+test_epoch: 5
+
+savedir: checkpoints/krn/synthetic_only
+logdir: log/krn/synthetic_only
+resultfn: results.txt
+debug_save_n: 20

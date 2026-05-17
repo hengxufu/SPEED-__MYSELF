@@ -1,0 +1,31 @@
+model_name: krn
+krn_head: heatmap
+backbone: swin_tiny_patch4_window7_224
+backbone_pretrained_path: checkpoints/pretrained/swin_tiny_patch4_window7_224.pth
+input_shape: [224, 224]
+heatmap_size: [56, 56]
+heatmap_sigma: 2.0
+input_normalize: imagenet
+
+optimizer: adamw
+lr_schedule: cosine
+lr_backbone: 1.0e-5
+lr_head: 1.0e-4
+weight_decay: 0.05
+warmup_epochs: 5
+min_lr: 0.0
+grad_clip_norm: 1.0
+freeze_backbone_epochs: 5
+
+train_domain: synthetic
+test_domain: synthetic
+train_csv: train.csv
+test_csv: validation.csv
+max_epochs: 75
+batch_size: 48
+test_epoch: 5
+
+savedir: checkpoints/krn/swin_tiny_heatmap
+logdir: log/krn/swin_tiny_heatmap
+resultfn: results.txt
+debug_save_n: 20
