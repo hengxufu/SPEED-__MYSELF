@@ -20,6 +20,68 @@ The implementation of the SPN model follows from the original work by Sumant Sha
 - Domain randomization via style augmentation introduced in [Style Augmentation: Data Augmentation via Style Randomization](https://openaccess.thecvf.com/content_CVPRW_2019/papers/Deep%20Vision%20Workshop/Jackson_Style_Augmentation_Data_Augmentation_via_Style_Randomization_CVPRW_2019_paper.pdf) by Jackson et al. (2019). The implementation derives from the [official GitHub repository](https://github.com/philipjackson/style-augmentation).
 - Domain adaptation via DANN introduced in [Domain-Adversarial Training of Neural Networks](https://jmlr.org/papers/volume17/15-239/15-239.pdf) by Ganin et al. The implementation of Gradient Reversal Layer derives from the following [GitHub repository](https://github.com/jvanvugt/pytorch-domain-adaptation).
 
+## Our Research Notes (2026)
+
+This section documents our ongoing engineering/research work on top of the baseline, focusing on a heatmap-based keypoint pipeline + PnP evaluation with strict coordinate-system auditing.
+
+### Environment
+
+- OS: Windows 11
+- GPU: NVIDIA RTX 4060
+- RAM: 32 GB
+- Python venv: `$PROJROOT/.venv`
+- PyTorch: `torch 2.8.0+cu126` (verified via `import torch`)
+
+### Goals and Constraints
+
+- Goal: make a reproducible, debuggable heatmap-based keypoint detector whose training/evaluation path is consistent across overfit → small synthetic validation → full training, and whose pose results are validated beyond “EPnP returns finite”.
+- Constraints (kept throughout our debugging):
+  - Do not change the model structure/backbone family during auditing.
+  - Do not tune PnP thresholds to “hide” bad keypoints.
+  - Do not use image-intensity foreground masks as a training/eval filter; only geometry-based validity is allowed.
+
+### Method Overview
+
+- Keypoints are predicted as per-channel heatmaps (K=11, e.g. 56×56), decoded to 2D points (argmax/softargmax), then used for pose estimation with EPnP and solvePnPRansac in parallel.
+- A strict geometry-valid mask is used for:
+  - Heatmap target generation
+  - Heatmap loss/RMSE computation
+  - PnP/RANSAC point selection
+- We add channel-level diagnostics to explain outliers:
+  - per-channel top-3 peaks, peak-to-second ratio, and top1-to-GT distance
+  - “plateau / ambiguous peaks” vs “channel swap / symmetry confusion”
+- Pose metrics are reported with an additional `pose_valid` criterion:
+  - EPnP “finite” is not enough; we also check reprojection median error and translation norm range.
+
+### Coordinate-System and Outlier Auditing
+
+We treat coordinate transforms as first-class debug artifacts:
+
+- We verify `GT pose projection` ≡ `dataset GT 2D labels` (projection-vs-label error must be ~0px).
+- For worst samples, we print per-keypoint:
+  - 3D point, camera-frame (Xc,Yc,Zc), Zc validity
+  - (u,v) across original → crop → resized image → heatmap coordinates
+  - geom_valid flags (in crop / in heatmap / finite projection)
+  - GT/pred heatmap peaks and per-kpt pixel error
+
+### Current Results (Checkpointed)
+
+- 32-image overfit (synthetic subset) is solved:
+  - `pnp_ok_cnt = 32/32`
+  - `keypoint RMSE median ≈ 1.75 px`
+  - Mean RMSE can still be pulled up by a few repeated hard keypoints (outlier-driven).
+- Small synthetic validation did not pass initially (symptom pattern):
+  - EPnP often returns finite but `eR` is very large and RANSAC success rate is low.
+  - A key discovered failure mode is “frozen randomly-initialized backbone” (pretrained weights not actually loaded in offline environments).
+
+### Practical Notes (Windows + Offline Pretrained)
+
+- If timm cannot download pretrained weights (offline / blocked), training can silently degrade.
+- We support placing local backbone weights under:
+  - `log/pretrained/<backbone>.pth`
+  - Example: `log/pretrained/swin_tiny_patch4_window7_224.pth`
+- For PowerShell multiline commands, use backticks (`) instead of `^` (cmd.exe).
+
 ## Installation
 
 The code is developed and tested with python 3.7 on Ubuntu 20.04. It is implemented with PyTorch 1.8.0 and trained on a single NVIDIA GeForce RTX 2080 Ti 12GB GPU.
@@ -150,5 +212,4 @@ SPN was introduced in the following paper:
 	month={January 13-17}
 }
 ```
-
 
