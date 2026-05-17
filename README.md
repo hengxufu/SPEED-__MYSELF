@@ -1,4 +1,4 @@
-# SPEED+: Next-Generation Dataset for Spacecraft Pose Estimation across Domain Gap
+# SPEED-: Next-Generation Dataset for Spacecraft Pose Estimation across Domain Gap
 
 This repository is developed by Tae Ha "Jeff" Park at [Space Rendezvous Laboratory (SLAB)](https://slab.stanford.edu) of Stanford University.
 
@@ -87,55 +87,51 @@ We treat coordinate transforms as first-class debug artifacts:
 The code is developed and tested with python 3.7 on Ubuntu 20.04. It is implemented with PyTorch 1.8.0 and trained on a single NVIDIA GeForce RTX 2080 Ti 12GB GPU.
 
 1. Install [PyTorch](https://pytorch.org/).
-
 2. Clone this repository. Its full path (`$PROJROOT`) should be specified for `--projroot` in `config.py`.
-
 3. Install dependencies:
 
 ```
 pip install -r requirements.txt
 ```
 
-4. Download [SPEED+](https://purl.stanford.edu/wv398fc4383). Its full path (`$DATAROOT`) should be specified for `--dataroot` in `config.py`.
-
+language4. Download [SPEED+](https://purl.stanford.edu/wv398fc4383). Its full path (`$DATAROOT`) should be specified for `--dataroot` in `config.py`.
 5. Place the appropriate CSV files under `$DATAROOT/{domain}/splits_{model}/`. For example, CSV files for synthetic training and validation sets for KRN should be placed under `$DATAROOT/synthetic/splits_krn/`. See below for creating CSV files for yourself.
-
 6. Download the pre-trained AlexNet weights (`bvlc_alexnet.npy`) from [here](https://www.cs.toronto.edu/~guerzhoy/tf_alexnet/) and place it under `$PROJROOT/checkpoints/pretrained/` to be used for SPN.
 
 ## Pre-processing
 
 1. First, recover 11 keypoints as described in this [paper](https://arxiv.org/abs/1909.00392). The order of keypoints does not matter as long as you are consistent with them. Save it as [3 x 11] array under the variable named `tango3Dpoints` and save it under `src/utils/tangoPoints.mat`. If you choose to save it elsewhere, make sure to specify its location w.r.t. `$PROJROOT` at `--keypts_3d_model` in `config.py`. Please note that we will *not* be releasing the keypoints.
-
 2. For SPN, the attitude classes are provided at `src/utils/attitudeClasses.mat`.
-
 3. Pre-processing can be done from `preprocess.py`. Specify the below arguments when running the script, which will convert the JSON file at `$DATAROOT/{domain}/{jsonfile}` to `$DATAROOT/{domain}/{outcsvfile}`.
 
-| Argument | Description |
-| -------- | ----------- |
-| `--model_name` | KRN or SPN (e.g. `krn`) |
-| `--domain` | Dataset domain (e.g. `synthetic`)|
-| `--jsonfile` | JSON file name to convert (e.g. `train.json`)|
-| `--csvfile` | CSV file to write (e.g. `splits_krn/train.csv`)|
+| Argument         | Description                                      |
+| ---------------- | ------------------------------------------------ |
+| `--model_name` | KRN or SPN (e.g.`krn`)                         |
+| `--domain`     | Dataset domain (e.g.`synthetic`)               |
+| `--jsonfile`   | JSON file name to convert (e.g.`train.json`)   |
+| `--csvfile`    | CSV file to write (e.g.`splits_krn/train.csv`) |
 
 For example, to create CSV file of SPEED+ `synthetic` training set for KRN, run
+
 ```
 python preprocess.py --model_name krn --domain synthetic --jsonfile train.json --csvfile splits_krn/train.csv
 ```
 
-## Training & Testing
+language## Training & Testing
 
 Use below arguments to toggle on/off some settings:
 
-| Argument              | Description |
-| --------------------- | ----------- |
-| `--no_cuda`           | Disable GPU training |
-| `--use_fp16`          | Use mixed-precision training |
+| Argument                | Description                                       |
+| ----------------------- | ------------------------------------------------- |
+| `--no_cuda`           | Disable GPU training                              |
+| `--use_fp16`          | Use mixed-precision training                      |
 | `--randomize_texture` | Perform style augmentation online during training |
-| `--perform_dann`      | Perform domain adaptation via DANN |
+| `--perform_dann`      | Perform domain adaptation via DANN                |
 
 Note the networks in this repository are not trained with mixed-precision training, but it's recommended if your GPU supports Tensor Cores to expedite the training.
 
 To train KRN on SPEED+ synthetic training set:
+
 ```
 python train.py --savedir 'checkpoints/krn/synthetic_only' \
                 --logdir 'log/krn/synthetic_only' \
@@ -148,18 +144,21 @@ python train.py --savedir 'checkpoints/krn/synthetic_only' \
 
 ```
 
-Add `--randomize_texture` to train with style augmentation.
+languageAdd `--randomize_texture` to train with style augmentation.
 
 To test KRN on `synthetic` validation images:
+
 ```
 python test.py --pretrained 'checkpoints/krn/synthetic_only/model_best.pth.tar' \
                --logdir 'log/krn/synthetic_only' --resultfn 'results.txt' \
                --model_name 'krn' --input_shape 224 224 \
                --test_domain 'synthetic' --test_csv 'validation.csv'
 ```
-which will write the test results to `$PROJROOT/log/krn/synthetic_only/results.txt`.
+
+languagewhich will write the test results to `$PROJROOT/log/krn/synthetic_only/results.txt`.
 
 To test KRN on `lightbox` test images with DANN:
+
 ```
 python adapt.py --savedir 'checkpoints/krn/dann_lightbox' \
                 --logdir 'log/krn/dann_lightbox' --resultfn 'results.txt' \
@@ -171,7 +170,8 @@ python adapt.py --savedir 'checkpoints/krn/dann_lightbox' \
                 --train_csv 'train.csv' --test_csv 'test.csv' \
                 --perform_dann
 ```
-which currently assumes that `test.csv` for the lightbox domain is available with test labels for occasional validation. (You can comment out relevant parts in `adapt.py` to not run testing at all.)
+
+languagewhich currently assumes that `test.csv` for the lightbox domain is available with test labels for occasional validation. (You can comment out relevant parts in `adapt.py` to not run testing at all.)
 
 ## License
 
@@ -180,6 +180,7 @@ The SPEED+ basline studies repository is released under the MIT License.
 ## Citation
 
 If you find this repository and the SPEED+ dataset helpful in your research, please cite the paper below along with the dataset itself.
+
 ```
 @inproceedings{park2022speedplus,
   author={Park, Tae Ha and M{\"a}rtens, Marcus and Lecuyer, Gurvan and Izzo, Dario and D'Amico, Simone},
@@ -191,7 +192,8 @@ If you find this repository and the SPEED+ dataset helpful in your research, ple
 }
 ```
 
-KRN was introduced in the following paper:
+languageKRN was introduced in the following paper:
+
 ```
 @inproceedings{park2019krn,
 	author={Park, Tae Ha and Sharma, Sumant and D'Amico, Simone},
@@ -202,7 +204,8 @@ KRN was introduced in the following paper:
 }
 ```
 
-SPN was introduced in the following paper:
+languageSPN was introduced in the following paper:
+
 ```
 @inproceedings{sharma2019spn,
 	author={Sharma, Sumant and D'Amico, Simone},
@@ -213,3 +216,4 @@ SPN was introduced in the following paper:
 }
 ```
 
+language
