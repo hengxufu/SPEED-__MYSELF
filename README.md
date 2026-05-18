@@ -1,4 +1,4 @@
-# SPEED-: Next-Generation Dataset for Spacecraft Pose Estimation across Domain Gap
+# SPEED-: Next-Generation Dataset for Spacecraft Pose Estimation across Domain Gap Edited by Me
 
 This repository is developed by Tae Ha "Jeff" Park at [Space Rendezvous Laboratory (SLAB)](https://slab.stanford.edu) of Stanford University.
 
