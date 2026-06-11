@@ -10,22 +10,12 @@ keypoint labels as training supervision?**
 
 The resulting pipeline combines:
 
-a Swin-Tiny feature pyramid network (FPN);
-
-11-channel keypoint heatmaps with soft-argmax decoding;
-
-geometry-aware PnP/RANSAC validation;
-
-iterative teacher-student pseudo-label refresh; and
-
-parameter-efficient adaptation of the heatmap head, FPN, and backbone
-normalization parameters.
-
-| col1 | col2 | col3 |
-| ---- | ---- | ---- |
-|      |      |      |
-|      |      |      |
-
+- a Swin-Tiny feature pyramid network (FPN);
+- 11-channel keypoint heatmaps with soft-argmax decoding;
+- geometry-aware PnP/RANSAC validation;
+- iterative teacher-student pseudo-label refresh; and
+- parameter-efficient adaptation of the heatmap head, FPN, and backbone
+  normalization parameters.
 
 ![Model and adaptation pipeline](research/figures/model_architecture_flowchart.png)
 
@@ -78,18 +68,9 @@ ablation interpretation, reproducibility details, and limitations.
 
 ### Chinese Overview Figures
 
-The following two Chinese flowcharts are recommended for slides, reports, and
-internal research communication. Place the corresponding PNG files under
-`research/figures/` to render them directly in the README.
+![几何一致性热力图航天器位姿估计流程](<ChatGPT Image 2026年6月11日 00_47_17.png>)
 
-Expected filenames:
-
-- `research/figures/geometry_heatmap_pose_pipeline_cn.png`
-- `research/figures/final_geometry_heatmap_architecture_cn.png`
-
-![几何一致性热力图航天器位姿估计流程](research/figures/geometry_heatmap_pose_pipeline_cn.png)
-
-![最终架构：结合迭代目标域预适应的几何一致性热图位姿估计](research/figures/final_geometry_heatmap_architecture_cn.png)
+![最终架构：结合迭代目标域预适应的几何一致性热图位姿估计](<ChatGPT Image 2026年6月11日 00_50_58.png>)
 
 ## Repository Map
 
@@ -105,7 +86,7 @@ research/figures/                 Paper-ready architecture and result figures
 docs/research_method.md           Research and reproducibility documentation
 ```
 
-text## Environment
+## Environment
 
 Python 3.10 or 3.11 is recommended. Install a CUDA-compatible PyTorch and
 Torchvision build first, then install the remaining packages.
@@ -125,7 +106,7 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-powershellPlace the SPEED+ dataset outside the repository. Its root should contain
+Place the SPEED+ dataset outside the repository. Its root should contain
 `camera.json` and the `synthetic`, `lightbox`, and `sunlamp` folders. Model
 checkpoints and datasets are intentionally excluded from version control.
 
@@ -139,20 +120,20 @@ python preprocess.py --projroot . --dataroot <SPEED_PLUS_ROOT> `
   --csvfile splits_krn/train.csv
 ```
 
-powershellRun the full synthetic training configuration:
+Run the full synthetic training configuration:
 
 ```powershell
 .\scripts\run_fulltrain_224_56_E_full.ps1 -MaxEpochs 75 -BatchSize 48 -RunTag paper
 ```
 
-powershellPrepare bbox-conditioned HIL CSV files:
+Prepare bbox-conditioned HIL CSV files:
 
 ```powershell
 python research\scripts\prepare_target_dataset.py `
   --dataroot <SPEED_PLUS_ROOT> --outroot work\target_dataset
 ```
 
-powershellRun the final two-stage target pre-adaptation schedule:
+Run the final two-stage target pre-adaptation schedule:
 
 ```powershell
 .\research\scripts\run_target_preadapt.ps1 `
@@ -161,7 +142,7 @@ powershellRun the final two-stage target pre-adaptation schedule:
   -Domain lightbox
 ```
 
-powershellEvaluate a baseline or adapted checkpoint:
+Evaluate a baseline or adapted checkpoint:
 
 ```powershell
 .\research\scripts\evaluate_heatmap_domain.ps1 `
@@ -170,7 +151,7 @@ powershellEvaluate a baseline or adapted checkpoint:
   -Domain lightbox
 ```
 
-powershellRepeat the final two commands with `-Domain sunlamp`.
+Repeat the final two commands with `-Domain sunlamp`.
 
 ## Synthetic-Domain Reference
 
@@ -207,6 +188,10 @@ Per-keypoint diagnostics from the synthetic run:
 The broader research workflow also contains two independent modules for
 building render-to-real translation data from manually captured spacecraft
 images. Their paper-ready process diagrams are included for documentation.
+
+Chinese process figure used in our notes:
+
+![基于 SAM2 的卫星数据集生成流程](<ChatGPT Image 2026年6月11日 00_46_58.png>)
 
 | Module                                              | Figure                                                                                                                   |
 | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
