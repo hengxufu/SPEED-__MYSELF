@@ -10,12 +10,22 @@ keypoint labels as training supervision?**
 
 The resulting pipeline combines:
 
-- a Swin-Tiny feature pyramid network (FPN);
-- 11-channel keypoint heatmaps with soft-argmax decoding;
-- geometry-aware PnP/RANSAC validation;
-- iterative teacher-student pseudo-label refresh; and
-- parameter-efficient adaptation of the heatmap head, FPN, and backbone
-  normalization parameters.
+a Swin-Tiny feature pyramid network (FPN);
+
+11-channel keypoint heatmaps with soft-argmax decoding;
+
+geometry-aware PnP/RANSAC validation;
+
+iterative teacher-student pseudo-label refresh; and
+
+parameter-efficient adaptation of the heatmap head, FPN, and backbone
+normalization parameters.
+
+| col1 | col2 | col3 |
+| ---- | ---- | ---- |
+|      |      |      |
+|      |      |      |
+
 
 ![Model and adaptation pipeline](research/figures/model_architecture_flowchart.png)
 
@@ -23,12 +33,12 @@ The resulting pipeline combines:
 
 Lower is better for SPEED score, keypoint RMSE, and RANSAC failure rate.
 
-| Domain | Method | SPEED score | Keypoint RMSE (px) | RANSAC fail (%) | SPEED improvement |
-| --- | --- | ---: | ---: | ---: | ---: |
-| Lightbox | Synthetic baseline | 0.9076 | 39.61 | 51.57 | - |
-| Lightbox | Geometry-filtered pre-adaptation | **0.5696** | **24.74** | **32.69** | **37.23%** |
-| Sunlamp | Synthetic baseline | 1.0180 | 46.72 | 68.36 | - |
-| Sunlamp | Geometry-filtered pre-adaptation | **0.8794** | **38.67** | **57.69** | **13.61%** |
+| Domain   | Method                           |      SPEED score | Keypoint RMSE (px) | RANSAC fail (%) | SPEED improvement |
+| -------- | -------------------------------- | ---------------: | -----------------: | --------------: | ----------------: |
+| Lightbox | Synthetic baseline               |           0.9076 |              39.61 |           51.57 |                 - |
+| Lightbox | Geometry-filtered pre-adaptation | **0.5696** |    **24.74** | **32.69** |  **37.23%** |
+| Sunlamp  | Synthetic baseline               |           1.0180 |              46.72 |           68.36 |                 - |
+| Sunlamp  | Geometry-filtered pre-adaptation | **0.8794** |    **38.67** | **57.69** |  **13.61%** |
 
 The final method reduces RANSAC failures by 18.89 percentage points on
 Lightbox and 10.68 percentage points on Sunlamp.
@@ -66,6 +76,21 @@ annotations are used to prepare ROI records and to perform final evaluation.
 See [`docs/research_method.md`](docs/research_method.md) for the method,
 ablation interpretation, reproducibility details, and limitations.
 
+### Chinese Overview Figures
+
+The following two Chinese flowcharts are recommended for slides, reports, and
+internal research communication. Place the corresponding PNG files under
+`research/figures/` to render them directly in the README.
+
+Expected filenames:
+
+- `research/figures/geometry_heatmap_pose_pipeline_cn.png`
+- `research/figures/final_geometry_heatmap_architecture_cn.png`
+
+![几何一致性热力图航天器位姿估计流程](research/figures/geometry_heatmap_pose_pipeline_cn.png)
+
+![最终架构：结合迭代目标域预适应的几何一致性热图位姿估计](research/figures/final_geometry_heatmap_architecture_cn.png)
+
 ## Repository Map
 
 ```text
@@ -80,7 +105,7 @@ research/figures/                 Paper-ready architecture and result figures
 docs/research_method.md           Research and reproducibility documentation
 ```
 
-## Environment
+text## Environment
 
 Python 3.10 or 3.11 is recommended. Install a CUDA-compatible PyTorch and
 Torchvision build first, then install the remaining packages.
@@ -100,7 +125,7 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-Place the SPEED+ dataset outside the repository. Its root should contain
+powershellPlace the SPEED+ dataset outside the repository. Its root should contain
 `camera.json` and the `synthetic`, `lightbox`, and `sunlamp` folders. Model
 checkpoints and datasets are intentionally excluded from version control.
 
@@ -114,20 +139,20 @@ python preprocess.py --projroot . --dataroot <SPEED_PLUS_ROOT> `
   --csvfile splits_krn/train.csv
 ```
 
-Run the full synthetic training configuration:
+powershellRun the full synthetic training configuration:
 
 ```powershell
 .\scripts\run_fulltrain_224_56_E_full.ps1 -MaxEpochs 75 -BatchSize 48 -RunTag paper
 ```
 
-Prepare bbox-conditioned HIL CSV files:
+powershellPrepare bbox-conditioned HIL CSV files:
 
 ```powershell
 python research\scripts\prepare_target_dataset.py `
   --dataroot <SPEED_PLUS_ROOT> --outroot work\target_dataset
 ```
 
-Run the final two-stage target pre-adaptation schedule:
+powershellRun the final two-stage target pre-adaptation schedule:
 
 ```powershell
 .\research\scripts\run_target_preadapt.ps1 `
@@ -136,7 +161,7 @@ Run the final two-stage target pre-adaptation schedule:
   -Domain lightbox
 ```
 
-Evaluate a baseline or adapted checkpoint:
+powershellEvaluate a baseline or adapted checkpoint:
 
 ```powershell
 .\research\scripts\evaluate_heatmap_domain.ps1 `
@@ -145,7 +170,7 @@ Evaluate a baseline or adapted checkpoint:
   -Domain lightbox
 ```
 
-Repeat the final two commands with `-Domain sunlamp`.
+powershellRepeat the final two commands with `-Domain sunlamp`.
 
 ## Synthetic-Domain Reference
 
@@ -153,17 +178,17 @@ The best synthetic validation checkpoint by minimum thresholded SPEED score is
 epoch 72. All values below are taken from
 `log/fulltrain_224_56_E_full_FULL_TRAIN 20260516/results.txt`.
 
-| Metric | Value |
-| --- | ---: |
-| Mean / median keypoint RMSE | 1.556203 / 1.256266 px |
-| Mean / median translation error | 0.026571 / 0.018389 m |
-| Mean / median rotation error | 0.904178 / 0.651883 deg |
-| Thresholded SPEED score | 0.020293 |
-| EPnP fail rate | 0.008338% |
-| RANSAC fail rate | 1.067200% |
-| RANSAC inlier median | 11 |
-| Reprojection median (px) | 3.424157 |
-| Pose valid count | 11463 / 11994 |
+| Metric                          |                   Value |
+| ------------------------------- | ----------------------: |
+| Mean / median keypoint RMSE     |  1.556203 / 1.256266 px |
+| Mean / median translation error |   0.026571 / 0.018389 m |
+| Mean / median rotation error    | 0.904178 / 0.651883 deg |
+| Thresholded SPEED score         |                0.020293 |
+| EPnP fail rate                  |               0.008338% |
+| RANSAC fail rate                |               1.067200% |
+| RANSAC inlier median            |                      11 |
+| Reprojection median (px)        |                3.424157 |
+| Pose valid count                |           11463 / 11994 |
 
 Synthetic-domain training curves and diagnostics:
 
@@ -183,10 +208,10 @@ The broader research workflow also contains two independent modules for
 building render-to-real translation data from manually captured spacecraft
 images. Their paper-ready process diagrams are included for documentation.
 
-| Module | Figure |
-| --- | --- |
-| SAM2 semantic segmentation and dataset construction | [`sam2_satellite_dataset_generation_flowchart.png`](research/figures/sam2_satellite_dataset_generation_flowchart.png) |
-| img2img-turbo render-to-real style transfer | [`img2img_turbo_satellite_render2real_flowchart.png`](research/figures/img2img_turbo_satellite_render2real_flowchart.png) |
+| Module                                              | Figure                                                                                                                   |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| SAM2 semantic segmentation and dataset construction | [`sam2_satellite_dataset_generation_flowchart.png`](research/figures/sam2_satellite_dataset_generation_flowchart.png)     |
+| img2img-turbo render-to-real style transfer         | [`img2img_turbo_satellite_render2real_flowchart.png`](research/figures/img2img_turbo_satellite_render2real_flowchart.png) |
 
 ## Attribution
 
