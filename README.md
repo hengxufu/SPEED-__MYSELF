@@ -85,6 +85,13 @@ docs/research_method.md           Research and reproducibility documentation
 Python 3.10 or 3.11 is recommended. Install a CUDA-compatible PyTorch and
 Torchvision build first, then install the remaining packages.
 
+Our local dev machine for this repository:
+
+- OS: Windows 11
+- GPU: NVIDIA RTX 4060
+- RAM: 32 GB
+- PyTorch: `torch 2.8.0+cu126`
+
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
@@ -142,15 +149,21 @@ Repeat the final two commands with `-Domain sunlamp`.
 
 ## Synthetic-Domain Reference
 
-The best synthetic validation checkpoint is epoch 72:
+The best synthetic validation checkpoint (by minimum thresholded SPEED score) is epoch 72.
+All values below are taken from:
+`log/fulltrain_224_56_E_full_FULL_TRAIN 20260516/results.txt`.
 
 | Metric | Value |
 | --- | ---: |
 | Mean / median keypoint RMSE | 1.556 / 1.256 px |
-| Median translation error | 0.0184 m |
-| Median rotation error | 0.6519 deg |
-| Thresholded SPEED score | 0.0203 |
-| RANSAC failure rate | 1.067% |
+| Mean / median translation error | 0.026571 / 0.018389 m |
+| Mean / median rotation error | 0.904178 / 0.651883 deg |
+| Thresholded SPEED score | 0.020293 |
+| EPnP fail rate | 0.008338% |
+| RANSAC fail rate | 1.067200% |
+| RANSAC inlier median | 11 |
+| Reprojection median (px) | 3.424157 |
+| Pose valid count | 11463 / 11994 |
 
 ![Synthetic training curves](research/figures/keypoint_rmse_curve.png)
 
