@@ -149,13 +149,13 @@ Repeat the final two commands with `-Domain sunlamp`.
 
 ## Synthetic-Domain Reference
 
-The best synthetic validation checkpoint (by minimum thresholded SPEED score) is epoch 72.
-All values below are taken from:
+The best synthetic validation checkpoint by minimum thresholded SPEED score is
+epoch 72. All values below are taken from
 `log/fulltrain_224_56_E_full_FULL_TRAIN 20260516/results.txt`.
 
 | Metric | Value |
 | --- | ---: |
-| Mean / median keypoint RMSE | 1.556 / 1.256 px |
+| Mean / median keypoint RMSE | 1.556203 / 1.256266 px |
 | Mean / median translation error | 0.026571 / 0.018389 m |
 | Mean / median rotation error | 0.904178 / 0.651883 deg |
 | Thresholded SPEED score | 0.020293 |
@@ -165,7 +165,17 @@ All values below are taken from:
 | Reprojection median (px) | 3.424157 |
 | Pose valid count | 11463 / 11994 |
 
-![Synthetic training curves](research/figures/keypoint_rmse_curve.png)
+Synthetic-domain training curves and diagnostics:
+
+![Synthetic RMSE curve](research/figures/keypoint_rmse_curve.png)
+![Synthetic pose error curve](research/figures/pose_error_curve.png)
+![Synthetic SPEED and RANSAC curve](research/figures/score_ransac_curve.png)
+
+Per-keypoint diagnostics from the synthetic run:
+
+![Per-keypoint RMSE at epoch 75](research/figures/per_keypoint_rmse_epoch75.png)
+![Per-keypoint PCK@5 at epoch 75](research/figures/per_keypoint_pck5_epoch75.png)
+![Hard keypoint counts at epoch 75](research/figures/hard_keypoint_counts_epoch75.png)
 
 ## Data Generation Modules
 
