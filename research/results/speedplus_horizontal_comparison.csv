@@ -1,0 +1,17 @@
+﻿domain,method,source,eT_m,eR_deg,epose,note
+lightbox,SPN synthetic-only,SPEED+ Table 3,0.45,65.12,1.21,Published SPEED+ benchmark; HIL pose score is reported as in the source paper.
+sunlamp,SPN synthetic-only,SPEED+ Table 3,0.65,92.95,1.73,Published SPEED+ benchmark; HIL pose score is reported as in the source paper.
+lightbox,KRN synthetic-only,SPEED+ Table 3/4,2.25,44.53,1.12,Published SPEED+ benchmark; HIL pose score is reported as in the source paper.
+sunlamp,KRN synthetic-only,SPEED+ Table 3/4,14.64,80.95,3.73,Published SPEED+ benchmark; HIL pose score is reported as in the source paper.
+lightbox,HigherHRNet+EPnP,SPEED+ Table 3,0.97,34.71,0.77,Published SPEED+ benchmark; HIL pose score is reported as in the source paper.
+sunlamp,HigherHRNet+EPnP,SPEED+ Table 3,0.85,47.75,0.98,Published SPEED+ benchmark; HIL pose score is reported as in the source paper.
+lightbox,KRN+Style Aug.,SPEED+ Table 4,1.06,36.14,0.81,Published SPEED+ benchmark; HIL pose score is reported as in the source paper.
+sunlamp,KRN+Style Aug.,SPEED+ Table 4,1.32,62.85,1.32,Published SPEED+ benchmark; HIL pose score is reported as in the source paper.
+lightbox,KRN+DANN,SPEED+ Table 4,0.95,33.62,0.74,Published SPEED+ benchmark; HIL pose score is reported as in the source paper.
+sunlamp,KRN+DANN,SPEED+ Table 4,2.04,65.37,1.47,Published SPEED+ benchmark; HIL pose score is reported as in the source paper.
+lightbox,Oracle,SPEED+ Table 4,0.24,6.15,0.15,Published SPEED+ benchmark; HIL pose score is reported as in the source paper.
+sunlamp,Oracle,SPEED+ Table 4,0.19,5.33,0.13,Published SPEED+ benchmark; HIL pose score is reported as in the source paper.
+lightbox,Ours baseline,This work,1.8077725228727812,35.928059483240474,0.9075859433750001,Swin heatmap keypoint model; thresholded SPEED score from local evaluation script.
+lightbox,Ours final,This work,1.1108810639011273,22.83080956813827,0.5696402790498456,Swin heatmap keypoint model; thresholded SPEED score from local evaluation script.
+sunlamp,Ours baseline,This work,1.689938647396423,42.713975243185054,1.0179781239721035,Swin heatmap keypoint model; thresholded SPEED score from local evaluation script.
+sunlamp,Ours final,This work,1.447299608190089,36.84004148023752,0.8794282632657623,Swin heatmap keypoint model; thresholded SPEED score from local evaluation script.

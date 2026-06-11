@@ -4,6 +4,8 @@ import os
 import os.path as osp
 import sys
 
+_HERE = osp.dirname(osp.abspath(__file__))
+
 def _default_os_key():
     if os.name == 'nt':
         return 'windows'
@@ -20,6 +22,10 @@ PROJROOTDIR = {'mac':  '/Users/taehapark/SLAB/speedplusbaseline',
 DATAROOTDIR = {'mac':  '/Users/taehapark/SLAB/speedplus/data/datasets',
                'linux': '/home/jeffpark/SLAB/Dataset',
                'windows':'D:/进阶项目/CNN/speedplusv2'}
+
+# Keep Windows defaults portable even when the repository is moved.
+PROJROOTDIR['windows'] = _HERE
+DATAROOTDIR['windows'] = osp.abspath(osp.join(_HERE, '..', 'speedplusv2'))
 
 parser = argparse.ArgumentParser('Configurations for SPEED+ Baseline Study')
 

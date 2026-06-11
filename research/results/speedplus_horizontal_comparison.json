@@ -1,0 +1,146 @@
+[
+  {
+    "domain": "lightbox",
+    "method": "SPN synthetic-only",
+    "source": "SPEED+ Table 3",
+    "eT_m": 0.45,
+    "eR_deg": 65.12,
+    "epose": 1.21,
+    "note": "Published SPEED+ benchmark; HIL pose score is reported as in the source paper."
+  },
+  {
+    "domain": "sunlamp",
+    "method": "SPN synthetic-only",
+    "source": "SPEED+ Table 3",
+    "eT_m": 0.65,
+    "eR_deg": 92.95,
+    "epose": 1.73,
+    "note": "Published SPEED+ benchmark; HIL pose score is reported as in the source paper."
+  },
+  {
+    "domain": "lightbox",
+    "method": "KRN synthetic-only",
+    "source": "SPEED+ Table 3/4",
+    "eT_m": 2.25,
+    "eR_deg": 44.53,
+    "epose": 1.12,
+    "note": "Published SPEED+ benchmark; HIL pose score is reported as in the source paper."
+  },
+  {
+    "domain": "sunlamp",
+    "method": "KRN synthetic-only",
+    "source": "SPEED+ Table 3/4",
+    "eT_m": 14.64,
+    "eR_deg": 80.95,
+    "epose": 3.73,
+    "note": "Published SPEED+ benchmark; HIL pose score is reported as in the source paper."
+  },
+  {
+    "domain": "lightbox",
+    "method": "HigherHRNet+EPnP",
+    "source": "SPEED+ Table 3",
+    "eT_m": 0.97,
+    "eR_deg": 34.71,
+    "epose": 0.77,
+    "note": "Published SPEED+ benchmark; HIL pose score is reported as in the source paper."
+  },
+  {
+    "domain": "sunlamp",
+    "method": "HigherHRNet+EPnP",
+    "source": "SPEED+ Table 3",
+    "eT_m": 0.85,
+    "eR_deg": 47.75,
+    "epose": 0.98,
+    "note": "Published SPEED+ benchmark; HIL pose score is reported as in the source paper."
+  },
+  {
+    "domain": "lightbox",
+    "method": "KRN+Style Aug.",
+    "source": "SPEED+ Table 4",
+    "eT_m": 1.06,
+    "eR_deg": 36.14,
+    "epose": 0.81,
+    "note": "Published SPEED+ benchmark; HIL pose score is reported as in the source paper."
+  },
+  {
+    "domain": "sunlamp",
+    "method": "KRN+Style Aug.",
+    "source": "SPEED+ Table 4",
+    "eT_m": 1.32,
+    "eR_deg": 62.85,
+    "epose": 1.32,
+    "note": "Published SPEED+ benchmark; HIL pose score is reported as in the source paper."
+  },
+  {
+    "domain": "lightbox",
+    "method": "KRN+DANN",
+    "source": "SPEED+ Table 4",
+    "eT_m": 0.95,
+    "eR_deg": 33.62,
+    "epose": 0.74,
+    "note": "Published SPEED+ benchmark; HIL pose score is reported as in the source paper."
+  },
+  {
+    "domain": "sunlamp",
+    "method": "KRN+DANN",
+    "source": "SPEED+ Table 4",
+    "eT_m": 2.04,
+    "eR_deg": 65.37,
+    "epose": 1.47,
+    "note": "Published SPEED+ benchmark; HIL pose score is reported as in the source paper."
+  },
+  {
+    "domain": "lightbox",
+    "method": "Oracle",
+    "source": "SPEED+ Table 4",
+    "eT_m": 0.24,
+    "eR_deg": 6.15,
+    "epose": 0.15,
+    "note": "Published SPEED+ benchmark; HIL pose score is reported as in the source paper."
+  },
+  {
+    "domain": "sunlamp",
+    "method": "Oracle",
+    "source": "SPEED+ Table 4",
+    "eT_m": 0.19,
+    "eR_deg": 5.33,
+    "epose": 0.13,
+    "note": "Published SPEED+ benchmark; HIL pose score is reported as in the source paper."
+  },
+  {
+    "domain": "lightbox",
+    "method": "Ours baseline",
+    "source": "This work",
+    "eT_m": 1.8077725228727812,
+    "eR_deg": 35.928059483240474,
+    "epose": 0.9075859433750001,
+    "note": "Swin heatmap keypoint model; thresholded SPEED score from local evaluation script."
+  },
+  {
+    "domain": "lightbox",
+    "method": "Ours final",
+    "source": "This work",
+    "eT_m": 1.1108810639011273,
+    "eR_deg": 22.83080956813827,
+    "epose": 0.5696402790498456,
+    "note": "Swin heatmap keypoint model; thresholded SPEED score from local evaluation script."
+  },
+  {
+    "domain": "sunlamp",
+    "method": "Ours baseline",
+    "source": "This work",
+    "eT_m": 1.689938647396423,
+    "eR_deg": 42.713975243185054,
+    "epose": 1.0179781239721035,
+    "note": "Swin heatmap keypoint model; thresholded SPEED score from local evaluation script."
+  },
+  {
+    "domain": "sunlamp",
+    "method": "Ours final",
+    "source": "This work",
+    "eT_m": 1.447299608190089,
+    "eR_deg": 36.84004148023752,
+    "epose": 0.8794282632657623,
+    "note": "Swin heatmap keypoint model; thresholded SPEED score from local evaluation script."
+  }
+]

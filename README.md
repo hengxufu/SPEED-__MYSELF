@@ -1,219 +1,176 @@
-# SPEED-: Next-Generation Dataset for Spacecraft Pose Estimation across Domain Gap
+# Geometry-Filtered Pre-Adaptation for Spacecraft Pose Estimation
 
-This repository is developed by Tae Ha "Jeff" Park at [Space Rendezvous Laboratory (SLAB)](https://slab.stanford.edu) of Stanford University.
+This repository extends the official SPEED+ baseline with a heatmap-based
+spacecraft pose estimator and a lightweight target-domain pre-adaptation
+method for the `lightbox` and `sunlamp` hardware-in-the-loop (HIL) domains.
 
-- [2021.12.02] Our paper will be presented at the 2022 IEEE Aerospace Conference! This repository is updated for our latest draft which will soon become available in arXiv.
-- [2022.08.13] Citation update.
-- [2022.10.12] As announced on the [Kelvins website](https://kelvins.esa.int/pose-estimation-2021/discussion/90/), the post-mortem competition will terminate on 2022/12/31, followed by the full release of the lightbox and sunlamp labels on 2023/01/01. This repository will be updated shortly afterwards to reflect the new availability of the test labels.
-- [2023.01.12] The lightbox and sunlamp domain test labels are now available through [Stanford Digital Repository](https://purl.stanford.edu/wv398fc4383)! The metrics for HIL domains are also slightly modified to be in agreement with our [new paper](https://www.sciencedirect.com/science/article/pii/S0094576523000048) summarizing the competition.
-- [2023.11.03] We are sharing the `tangoPoints.mat` file under `src/utils`.
+The research question is simple: **can geometric consistency turn uncertain
+target-domain keypoints into useful pseudo-labels without using target pose or
+keypoint labels as training supervision?**
 
-## Introduction
+The resulting pipeline combines:
 
-This is the official repository of the baseline studies conducted in our paper titled [SPEED+: Next-Generation Dataset for Spacecraft Pose Estimation across Domain Gap](https://ieeexplore.ieee.org/document/9843439). It consists of the official PyTorch implementations of the following CNN models:
+- a Swin-Tiny feature pyramid network (FPN);
+- 11-channel keypoint heatmaps with soft-argmax decoding;
+- geometry-aware PnP/RANSAC validation;
+- iterative teacher-student pseudo-label refresh; and
+- parameter-efficient adaptation of the heatmap head, FPN, and backbone
+  normalization parameters.
 
-- Keypoint Regression Network (KRN) [[arXiv](https://arxiv.org/abs/1909.00392)]
-- Spacecraft Pose Network (SPN) [[arXiv](https://arxiv.org/abs/1906.09868)]
+![Model and adaptation pipeline](research/figures/model_architecture_flowchart.png)
 
-The implementation of the SPN model follows from the original work by Sumant Sharma based on Tensorflow and MATLAB. The repository also supports the following algorithms for the KRN model:
+## Main Results
 
-- Domain randomization via style augmentation introduced in [Style Augmentation: Data Augmentation via Style Randomization](https://openaccess.thecvf.com/content_CVPRW_2019/papers/Deep%20Vision%20Workshop/Jackson_Style_Augmentation_Data_Augmentation_via_Style_Randomization_CVPRW_2019_paper.pdf) by Jackson et al. (2019). The implementation derives from the [official GitHub repository](https://github.com/philipjackson/style-augmentation).
-- Domain adaptation via DANN introduced in [Domain-Adversarial Training of Neural Networks](https://jmlr.org/papers/volume17/15-239/15-239.pdf) by Ganin et al. The implementation of Gradient Reversal Layer derives from the following [GitHub repository](https://github.com/jvanvugt/pytorch-domain-adaptation).
+Lower is better for SPEED score, keypoint RMSE, and RANSAC failure rate.
 
-## Our Research Notes (2026)
+| Domain | Method | SPEED score | Keypoint RMSE (px) | RANSAC fail (%) | SPEED improvement |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Lightbox | Synthetic baseline | 0.9076 | 39.61 | 51.57 | - |
+| Lightbox | Geometry-filtered pre-adaptation | **0.5696** | **24.74** | **32.69** | **37.23%** |
+| Sunlamp | Synthetic baseline | 1.0180 | 46.72 | 68.36 | - |
+| Sunlamp | Geometry-filtered pre-adaptation | **0.8794** | **38.67** | **57.69** | **13.61%** |
 
-This section documents our ongoing engineering/research work on top of the baseline, focusing on a heatmap-based keypoint pipeline + PnP evaluation with strict coordinate-system auditing.
+The final method reduces RANSAC failures by 18.89 percentage points on
+Lightbox and 10.68 percentage points on Sunlamp.
 
-### Environment
+![Target-domain pre-adaptation results](research/figures/domain_preadapt_comparison.png)
 
-- OS: Windows 11
-- GPU: NVIDIA RTX 4060
-- RAM: 32 GB
-- Python venv: `$PROJROOT/.venv`
-- PyTorch: `torch 2.8.0+cu126` (verified via `import torch`)
+The complete result tables are versioned in
+[`research/results`](research/results). Published SPEED+ values are included
+as a contextual horizontal comparison, not as a strict apples-to-apples
+ranking because model implementations and evaluation details differ.
 
-### Goals and Constraints
+![Contextual SPEED+ comparison](research/figures/speedplus_horizontal_epose.png)
 
-- Goal: make a reproducible, debuggable heatmap-based keypoint detector whose training/evaluation path is consistent across overfit → small synthetic validation → full training, and whose pose results are validated beyond “EPnP returns finite”.
-- Constraints (kept throughout our debugging):
-  - Do not change the model structure/backbone family during auditing.
-  - Do not tune PnP thresholds to “hide” bad keypoints.
-  - Do not use image-intensity foreground masks as a training/eval filter; only geometry-based validity is allowed.
+## Research Logic
 
-### Method Overview
+1. **Build a strong synthetic-domain estimator.** A Swin-Tiny backbone and FPN
+   predict spatially meaningful heatmaps instead of directly regressing
+   normalized coordinates.
+2. **Audit the geometry.** Predicted keypoints are passed through EPnP and
+   RANSAC, with explicit checks for reprojection error, inlier count, and
+   physically plausible translation.
+3. **Construct reliable target pseudo-labels.** Accepted target poses
+   reproject the known 3D spacecraft keypoints to produce geometry-consistent
+   2D pseudo-labels.
+4. **Adapt a small parameter subset.** Only the FPN, heatmap decoder/head, and
+   optional backbone normalization parameters are updated.
+5. **Refresh and evaluate.** The student becomes the next teacher, then the
+   final checkpoint is evaluated on the complete HIL domains.
 
-- Keypoints are predicted as per-channel heatmaps (K=11, e.g. 56×56), decoded to 2D points (argmax/softargmax), then used for pose estimation with EPnP and solvePnPRansac in parallel.
-- A strict geometry-valid mask is used for:
-  - Heatmap target generation
-  - Heatmap loss/RMSE computation
-  - PnP/RANSAC point selection
-- We add channel-level diagnostics to explain outliers:
-  - per-channel top-3 peaks, peak-to-second ratio, and top1-to-GT distance
-  - “plateau / ambiguous peaks” vs “channel swap / symmetry confusion”
-- Pose metrics are reported with an additional `pose_valid` criterion:
-  - EPnP “finite” is not enough; we also check reprojection median error and translation norm range.
+The current protocol is **bbox-conditioned and pose/keypoint-label-free during
+adaptation**: SPEED+ target bounding boxes are used for cropping, while target
+pose and keypoint labels are not used in the adaptation loss. Benchmark
+annotations are used to prepare ROI records and to perform final evaluation.
 
-### Coordinate-System and Outlier Auditing
+See [`docs/research_method.md`](docs/research_method.md) for the method,
+ablation interpretation, reproducibility details, and limitations.
 
-We treat coordinate transforms as first-class debug artifacts:
+## Repository Map
 
-- We verify `GT pose projection` ≡ `dataset GT 2D labels` (projection-vs-label error must be ~0px).
-- For worst samples, we print per-keypoint:
-  - 3D point, camera-frame (Xc,Yc,Zc), Zc validity
-  - (u,v) across original → crop → resized image → heatmap coordinates
-  - geom_valid flags (in crop / in heatmap / finite projection)
-  - GT/pred heatmap peaks and per-kpt pixel error
-
-### Current Results (Checkpointed)
-
-- 32-image overfit (synthetic subset) is solved:
-  - `pnp_ok_cnt = 32/32`
-  - `keypoint RMSE median ≈ 1.75 px`
-  - Mean RMSE can still be pulled up by a few repeated hard keypoints (outlier-driven).
-- Small synthetic validation did not pass initially (symptom pattern):
-  - EPnP often returns finite but `eR` is very large and RANSAC success rate is low.
-  - A key discovered failure mode is “frozen randomly-initialized backbone” (pretrained weights not actually loaded in offline environments).
-
-### Practical Notes (Windows + Offline Pretrained)
-
-- If timm cannot download pretrained weights (offline / blocked), training can silently degrade.
-- We support placing local backbone weights under:
-  - `log/pretrained/<backbone>.pth`
-  - Example: `log/pretrained/swin_tiny_patch4_window7_224.pth`
-- For PowerShell multiline commands, use backticks (`) instead of `^` (cmd.exe).
-
-## Installation
-
-The code is developed and tested with python 3.7 on Ubuntu 20.04. It is implemented with PyTorch 1.8.0 and trained on a single NVIDIA GeForce RTX 2080 Ti 12GB GPU.
-
-1. Install [PyTorch](https://pytorch.org/).
-2. Clone this repository. Its full path (`$PROJROOT`) should be specified for `--projroot` in `config.py`.
-3. Install dependencies:
-
-```
-pip install -r requirements.txt
+```text
+src/nets/heatmap_pose.py          Heatmap keypoint network
+src/utils/heatmap_pipeline.py     Heatmap targets, decoding, and PnP/RANSAC
+src/core/trainer.py               Synthetic-domain training
+src/core/inference.py             Pose and keypoint evaluation
+scripts/                          Synthetic training and ablation launchers
+research/scripts/                 Target pre-adaptation and result utilities
+research/results/                 Curated experiment tables and metadata
+research/figures/                 Paper-ready architecture and result figures
+docs/research_method.md           Research and reproducibility documentation
 ```
 
-language4. Download [SPEED+](https://purl.stanford.edu/wv398fc4383). Its full path (`$DATAROOT`) should be specified for `--dataroot` in `config.py`.
-5. Place the appropriate CSV files under `$DATAROOT/{domain}/splits_{model}/`. For example, CSV files for synthetic training and validation sets for KRN should be placed under `$DATAROOT/synthetic/splits_krn/`. See below for creating CSV files for yourself.
-6. Download the pre-trained AlexNet weights (`bvlc_alexnet.npy`) from [here](https://www.cs.toronto.edu/~guerzhoy/tf_alexnet/) and place it under `$PROJROOT/checkpoints/pretrained/` to be used for SPN.
+## Environment
 
-## Pre-processing
+Python 3.10 or 3.11 is recommended. Install a CUDA-compatible PyTorch and
+Torchvision build first, then install the remaining packages.
 
-1. First, recover 11 keypoints as described in this [paper](https://arxiv.org/abs/1909.00392). The order of keypoints does not matter as long as you are consistent with them. Save it as [3 x 11] array under the variable named `tango3Dpoints` and save it under `src/utils/tangoPoints.mat`. If you choose to save it elsewhere, make sure to specify its location w.r.t. `$PROJROOT` at `--keypts_3d_model` in `config.py`. Please note that we will *not* be releasing the keypoints.
-2. For SPN, the attitude classes are provided at `src/utils/attitudeClasses.mat`.
-3. Pre-processing can be done from `preprocess.py`. Specify the below arguments when running the script, which will convert the JSON file at `$DATAROOT/{domain}/{jsonfile}` to `$DATAROOT/{domain}/{outcsvfile}`.
-
-| Argument         | Description                                      |
-| ---------------- | ------------------------------------------------ |
-| `--model_name` | KRN or SPN (e.g.`krn`)                         |
-| `--domain`     | Dataset domain (e.g.`synthetic`)               |
-| `--jsonfile`   | JSON file name to convert (e.g.`train.json`)   |
-| `--csvfile`    | CSV file to write (e.g.`splits_krn/train.csv`) |
-
-For example, to create CSV file of SPEED+ `synthetic` training set for KRN, run
-
-```
-python preprocess.py --model_name krn --domain synthetic --jsonfile train.json --csvfile splits_krn/train.csv
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+# Install the PyTorch build appropriate for the local CUDA runtime first.
+python -m pip install -r requirements.txt
 ```
 
-language## Training & Testing
+Place the SPEED+ dataset outside the repository. Its root should contain
+`camera.json` and the `synthetic`, `lightbox`, and `sunlamp` folders. Model
+checkpoints and datasets are intentionally excluded from version control.
 
-Use below arguments to toggle on/off some settings:
+## Reproduce the Pipeline
 
-| Argument                | Description                                       |
-| ----------------------- | ------------------------------------------------- |
-| `--no_cuda`           | Disable GPU training                              |
-| `--use_fp16`          | Use mixed-precision training                      |
-| `--randomize_texture` | Perform style augmentation online during training |
-| `--perform_dann`      | Perform domain adaptation via DANN                |
+Generate KRN CSV files from SPEED+ annotations when needed:
 
-Note the networks in this repository are not trained with mixed-precision training, but it's recommended if your GPU supports Tensor Cores to expedite the training.
-
-To train KRN on SPEED+ synthetic training set:
-
-```
-python train.py --savedir 'checkpoints/krn/synthetic_only' \
-                --logdir 'log/krn/synthetic_only' \
-                --model_name 'krn' --input_shape 224 224 \
-                --batch_size 48 --max_epochs 75 \
-                --optimizer 'adamw' --lr 0.001 \
-                --weight_decay 0.01 --lr_decay_alpha 0.95 \
-                --train_domain 'synthetic' --test_domain 'synthetic' \
-                --train_csv 'train.csv' --test_csv 'test.csv'
-
+```powershell
+python preprocess.py --projroot . --dataroot <SPEED_PLUS_ROOT> `
+  --model_name krn --domain synthetic --jsonfile train.json `
+  --csvfile splits_krn/train.csv
 ```
 
-languageAdd `--randomize_texture` to train with style augmentation.
+Run the full synthetic training configuration:
 
-To test KRN on `synthetic` validation images:
-
-```
-python test.py --pretrained 'checkpoints/krn/synthetic_only/model_best.pth.tar' \
-               --logdir 'log/krn/synthetic_only' --resultfn 'results.txt' \
-               --model_name 'krn' --input_shape 224 224 \
-               --test_domain 'synthetic' --test_csv 'validation.csv'
+```powershell
+.\scripts\run_fulltrain_224_56_E_full.ps1 -MaxEpochs 75 -BatchSize 48 -RunTag paper
 ```
 
-languagewhich will write the test results to `$PROJROOT/log/krn/synthetic_only/results.txt`.
+Prepare bbox-conditioned HIL CSV files:
 
-To test KRN on `lightbox` test images with DANN:
-
-```
-python adapt.py --savedir 'checkpoints/krn/dann_lightbox' \
-                --logdir 'log/krn/dann_lightbox' --resultfn 'results.txt' \
-                --model_name 'krn' --input_shape 224 224 \
-                --batch_size 16 --max_epochs 750 --test_epoch 50 \
-                --optimizer 'adamw' --lr 0.001 \
-                --weight_decay 0.01 --lr_decay_alpha 0.95 --lr_decay_step 10 \
-                --train_domain 'synthetic' --test_domain 'lightbox' \
-                --train_csv 'train.csv' --test_csv 'test.csv' \
-                --perform_dann
+```powershell
+python research\scripts\prepare_target_dataset.py `
+  --dataroot <SPEED_PLUS_ROOT> --outroot work\target_dataset
 ```
 
-languagewhich currently assumes that `test.csv` for the lightbox domain is available with test labels for occasional validation. (You can comment out relevant parts in `adapt.py` to not run testing at all.)
+Run the final two-stage target pre-adaptation schedule:
 
-## License
-
-The SPEED+ basline studies repository is released under the MIT License.
-
-## Citation
-
-If you find this repository and the SPEED+ dataset helpful in your research, please cite the paper below along with the dataset itself.
-
-```
-@inproceedings{park2022speedplus,
-  author={Park, Tae Ha and M{\"a}rtens, Marcus and Lecuyer, Gurvan and Izzo, Dario and D'Amico, Simone},
-  booktitle={2022 IEEE Aerospace Conference (AERO)},
-  title={SPEED+: Next-Generation Dataset for Spacecraft Pose Estimation across Domain Gap},
-  year={2022},
-  pages={1-15},
-  doi={10.1109/AERO53065.2022.9843439}
-}
+```powershell
+.\research\scripts\run_target_preadapt.ps1 `
+  -DataRoot work\target_dataset `
+  -BaseCheckpoint checkpoints\fulltrain_224_56_E_full_paper\model_best.pth.tar `
+  -Domain lightbox
 ```
 
-languageKRN was introduced in the following paper:
+Evaluate a baseline or adapted checkpoint:
 
-```
-@inproceedings{park2019krn,
-	author={Park, Tae Ha and Sharma, Sumant and D'Amico, Simone},
-	booktitle={2019 AAS/AIAA Astrodynamics Specialist Conference, Portland, Maine},
-	title={Towards Robust Learning-Based Pose Estimation of Noncooperative Spacecraft},
-	year={2019},
-	month={August 11-15}
-}
+```powershell
+.\research\scripts\evaluate_heatmap_domain.ps1 `
+  -DataRoot work\target_dataset `
+  -Checkpoint outputs\preadapt\lightbox\stage2\model_adapted.pth.tar `
+  -Domain lightbox
 ```
 
-languageSPN was introduced in the following paper:
+Repeat the final two commands with `-Domain sunlamp`.
 
-```
-@inproceedings{sharma2019spn,
-	author={Sharma, Sumant and D'Amico, Simone},
-	booktitle={2019 AAS/AIAA Space Flight Mechanics Meeting, Ka'anapali, Maui, HI},
-	title={Pose Estimation for Non-Cooperative Spacecraft Rendezvous Using Neural Networks},
-	year={2019},
-	month={January 13-17}
-}
-```
+## Synthetic-Domain Reference
 
-language
+The best synthetic validation checkpoint is epoch 72:
+
+| Metric | Value |
+| --- | ---: |
+| Mean / median keypoint RMSE | 1.556 / 1.256 px |
+| Median translation error | 0.0184 m |
+| Median rotation error | 0.6519 deg |
+| Thresholded SPEED score | 0.0203 |
+| RANSAC failure rate | 1.067% |
+
+![Synthetic training curves](research/figures/keypoint_rmse_curve.png)
+
+## Data Generation Modules
+
+The broader research workflow also contains two independent modules for
+building render-to-real translation data from manually captured spacecraft
+images. Their paper-ready process diagrams are included for documentation.
+
+| Module | Figure |
+| --- | --- |
+| SAM2 semantic segmentation and dataset construction | [`sam2_satellite_dataset_generation_flowchart.png`](research/figures/sam2_satellite_dataset_generation_flowchart.png) |
+| img2img-turbo render-to-real style transfer | [`img2img_turbo_satellite_render2real_flowchart.png`](research/figures/img2img_turbo_satellite_render2real_flowchart.png) |
+
+## Attribution
+
+This work is built on the official implementation accompanying:
+
+> T. H. Park et al., "SPEED+: Next-Generation Dataset for Spacecraft Pose
+> Estimation across Domain Gap," 2022 IEEE Aerospace Conference.
+
+Please cite the SPEED+ paper and its official baseline when using this code.
+The original MIT license is retained in [`LICENSE.md`](LICENSE.md).
