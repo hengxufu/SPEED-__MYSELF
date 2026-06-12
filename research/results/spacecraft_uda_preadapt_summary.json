@@ -1,0 +1,80 @@
+[
+  {
+    "domain": "lightbox",
+    "method": "Synthetic baseline",
+    "speed_thr": 0.907585943375,
+    "kp_rmse_mean_px": 39.6068307457232,
+    "eT_mean_m": 1.8077725228727808,
+    "eR_mean_deg": 35.928059483240474,
+    "ransac_fail_pct": 51.57270029673591,
+    "pseudo_accepted_pct": NaN,
+    "speed_improve_pct_vs_baseline": 0.0,
+    "kp_rmse_improve_pct_vs_baseline": 0.0,
+    "ransac_fail_reduction_pp_vs_baseline": 0.0
+  },
+  {
+    "domain": "lightbox",
+    "method": "Spacecraft-UDA-inspired",
+    "speed_thr": 0.63679,
+    "kp_rmse_mean_px": 27.83741,
+    "eT_mean_m": 1.17446,
+    "eR_mean_deg": 26.08581,
+    "ransac_fail_pct": 37.49258,
+    "pseudo_accepted_pct": 34.86646884272997,
+    "speed_improve_pct_vs_baseline": 29.83694771296292,
+    "kp_rmse_improve_pct_vs_baseline": 29.715633702891214,
+    "ransac_fail_reduction_pp_vs_baseline": 14.080120296735913
+  },
+  {
+    "domain": "lightbox",
+    "method": "Geometry-only final",
+    "speed_thr": 0.5696402790498456,
+    "kp_rmse_mean_px": 24.736978899247568,
+    "eT_mean_m": 1.1108810639011273,
+    "eR_mean_deg": 22.83080956813827,
+    "ransac_fail_pct": 32.68545994065282,
+    "pseudo_accepted_pct": 48.70919881305638,
+    "speed_improve_pct_vs_baseline": 37.235665315446674,
+    "kp_rmse_improve_pct_vs_baseline": 37.54365488604841,
+    "ransac_fail_reduction_pp_vs_baseline": 18.88724035608309
+  },
+  {
+    "domain": "sunlamp",
+    "method": "Synthetic baseline",
+    "speed_thr": 1.0179781239721035,
+    "kp_rmse_mean_px": 46.7191141308614,
+    "eT_mean_m": 1.689938647396423,
+    "eR_mean_deg": 42.713975243185054,
+    "ransac_fail_pct": 68.362594052311,
+    "pseudo_accepted_pct": NaN,
+    "speed_improve_pct_vs_baseline": 0.0,
+    "kp_rmse_improve_pct_vs_baseline": 0.0,
+    "ransac_fail_reduction_pp_vs_baseline": 0.0
+  },
+  {
+    "domain": "sunlamp",
+    "method": "Spacecraft-UDA-inspired",
+    "speed_thr": 0.95962,
+    "kp_rmse_mean_px": 44.28569,
+    "eT_mean_m": 1.46047,
+    "eR_mean_deg": 41.14896,
+    "ransac_fail_pct": 65.06628,
+    "pseudo_accepted_pct": 8.491580078824795,
+    "speed_improve_pct_vs_baseline": 5.732748336908537,
+    "kp_rmse_improve_pct_vs_baseline": 5.2086264393740755,
+    "ransac_fail_reduction_pp_vs_baseline": 3.29631405231099
+  },
+  {
+    "domain": "sunlamp",
+    "method": "Geometry-only final",
+    "speed_thr": 0.8794282632657623,
+    "kp_rmse_mean_px": 38.66722660379058,
+    "eT_mean_m": 1.447299608190089,
+    "eR_mean_deg": 36.84004148023752,
+    "ransac_fail_pct": 57.68541741311358,
+    "pseudo_accepted_pct": 24.72232174847725,
+    "speed_improve_pct_vs_baseline": 13.610298438018106,
+    "kp_rmse_improve_pct_vs_baseline": 17.234675093618602,
+    "ransac_fail_reduction_pp_vs_baseline": 10.677176639197413
+  }
+]

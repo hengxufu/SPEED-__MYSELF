@@ -133,6 +133,8 @@ dmypy.json
 /checkpoints/
 /log/
 /figures/
+/outputs/
+/work/
 
 # Temporary
 matlab/

@@ -23,12 +23,12 @@ The resulting pipeline combines:
 
 Lower is better for SPEED score, keypoint RMSE, and RANSAC failure rate.
 
-| Domain   | Method                           |      SPEED score | Keypoint RMSE (px) | RANSAC fail (%) | SPEED improvement |
-| -------- | -------------------------------- | ---------------: | -----------------: | --------------: | ----------------: |
-| Lightbox | Synthetic baseline               |           0.9076 |              39.61 |           51.57 |                 - |
-| Lightbox | Geometry-filtered pre-adaptation | **0.5696** |    **24.74** | **32.69** |  **37.23%** |
-| Sunlamp  | Synthetic baseline               |           1.0180 |              46.72 |           68.36 |                 - |
-| Sunlamp  | Geometry-filtered pre-adaptation | **0.8794** |    **38.67** | **57.69** |  **13.61%** |
+| Domain | Method | SPEED score | Keypoint RMSE (px) | RANSAC fail (%) | SPEED improvement |
+| --- | --- | ---: | ---: | ---: | ---: |
+| Lightbox | Synthetic baseline | 0.9076 | 39.61 | 51.57 | - |
+| Lightbox | Geometry-filtered pre-adaptation | **0.5696** | **24.74** | **32.69** | **37.23%** |
+| Sunlamp | Synthetic baseline | 1.0180 | 46.72 | 68.36 | - |
+| Sunlamp | Geometry-filtered pre-adaptation | **0.8794** | **38.67** | **57.69** | **13.61%** |
 
 The final method reduces RANSAC failures by 18.89 percentage points on
 Lightbox and 10.68 percentage points on Sunlamp.
@@ -66,11 +66,13 @@ annotations are used to prepare ROI records and to perform final evaluation.
 See [`docs/research_method.md`](docs/research_method.md) for the method,
 ablation interpretation, reproducibility details, and limitations.
 
-### Chinese Overview Figures
-
-![几何一致性热力图航天器位姿估计流程](<ChatGPT Image 2026年6月11日 00_47_17.png>)
-
-![最终架构：结合迭代目标域预适应的几何一致性热图位姿估计](<ChatGPT Image 2026年6月11日 00_50_58.png>)
+An additional multi-round pre-adaptation path inspired by
+[`JotaBravo/spacecraft-uda`](https://github.com/JotaBravo/spacecraft-uda)
+is available in
+[`research/scripts/spacecraft_uda_preadapt.py`](research/scripts/spacecraft_uda_preadapt.py).
+It combines iterative target pseudo-label self-training with cross-view
+teacher consensus, RANSAC-PnP geometry filtering, and synthetic source replay.
+See [`docs/spacecraft_uda_preadapt.md`](docs/spacecraft_uda_preadapt.md).
 
 ## Repository Map
 
@@ -90,13 +92,6 @@ docs/research_method.md           Research and reproducibility documentation
 
 Python 3.10 or 3.11 is recommended. Install a CUDA-compatible PyTorch and
 Torchvision build first, then install the remaining packages.
-
-Our local dev machine for this repository:
-
-- OS: Windows 11
-- GPU: NVIDIA RTX 4060
-- RAM: 32 GB
-- PyTorch: `torch 2.8.0+cu126`
 
 ```powershell
 python -m venv .venv
@@ -155,33 +150,17 @@ Repeat the final two commands with `-Domain sunlamp`.
 
 ## Synthetic-Domain Reference
 
-The best synthetic validation checkpoint by minimum thresholded SPEED score is
-epoch 72. All values below are taken from
-`log/fulltrain_224_56_E_full_FULL_TRAIN 20260516/results.txt`.
+The best synthetic validation checkpoint is epoch 72:
 
-| Metric                          |                   Value |
-| ------------------------------- | ----------------------: |
-| Mean / median keypoint RMSE     |  1.556203 / 1.256266 px |
-| Mean / median translation error |   0.026571 / 0.018389 m |
-| Mean / median rotation error    | 0.904178 / 0.651883 deg |
-| Thresholded SPEED score         |                0.020293 |
-| EPnP fail rate                  |               0.008338% |
-| RANSAC fail rate                |               1.067200% |
-| RANSAC inlier median            |                      11 |
-| Reprojection median (px)        |                3.424157 |
-| Pose valid count                |           11463 / 11994 |
+| Metric | Value |
+| --- | ---: |
+| Mean / median keypoint RMSE | 1.556 / 1.256 px |
+| Median translation error | 0.0184 m |
+| Median rotation error | 0.6519 deg |
+| Thresholded SPEED score | 0.0203 |
+| RANSAC failure rate | 1.067% |
 
-Synthetic-domain training curves and diagnostics:
-
-![Synthetic RMSE curve](research/figures/keypoint_rmse_curve.png)
-![Synthetic pose error curve](research/figures/pose_error_curve.png)
-![Synthetic SPEED and RANSAC curve](research/figures/score_ransac_curve.png)
-
-Per-keypoint diagnostics from the synthetic run:
-
-![Per-keypoint RMSE at epoch 75](research/figures/per_keypoint_rmse_epoch75.png)
-![Per-keypoint PCK@5 at epoch 75](research/figures/per_keypoint_pck5_epoch75.png)
-![Hard keypoint counts at epoch 75](research/figures/hard_keypoint_counts_epoch75.png)
+![Synthetic training curves](research/figures/keypoint_rmse_curve.png)
 
 ## Data Generation Modules
 
@@ -189,14 +168,10 @@ The broader research workflow also contains two independent modules for
 building render-to-real translation data from manually captured spacecraft
 images. Their paper-ready process diagrams are included for documentation.
 
-Chinese process figure used in our notes:
-
-![基于 SAM2 的卫星数据集生成流程](<ChatGPT Image 2026年6月11日 00_46_58.png>)
-
-| Module                                              | Figure                                                                                                                   |
-| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| SAM2 semantic segmentation and dataset construction | [`sam2_satellite_dataset_generation_flowchart.png`](research/figures/sam2_satellite_dataset_generation_flowchart.png)     |
-| img2img-turbo render-to-real style transfer         | [`img2img_turbo_satellite_render2real_flowchart.png`](research/figures/img2img_turbo_satellite_render2real_flowchart.png) |
+| Module | Figure |
+| --- | --- |
+| SAM2 semantic segmentation and dataset construction | [`sam2_satellite_dataset_generation_flowchart.png`](research/figures/sam2_satellite_dataset_generation_flowchart.png) |
+| img2img-turbo render-to-real style transfer | [`img2img_turbo_satellite_render2real_flowchart.png`](research/figures/img2img_turbo_satellite_render2real_flowchart.png) |
 
 ## Attribution
 
